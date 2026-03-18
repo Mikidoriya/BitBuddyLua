@@ -1,0 +1,7 @@
+.vscode/
+*.luac
+bin/
+tmp/
+.DS_Store
+*.rockspec
+.idea/
