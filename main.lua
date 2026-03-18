@@ -1,6 +1,9 @@
 package.path = package.path .. ';./src/?.lua'
 
-local Pet = require("pet")
+local ok, Pet = pcall(require, "pet")
+if not ok then
+	error("Failed to load pet module: " .. Pet)
+end
 
 local state = "menu" -- menu, playing, gameover
 local petTypes = {"Cat","Dog"}
@@ -12,19 +15,38 @@ button.w = 120
 button.h = 36
 
 local function startGame()
-	pet = Pet.new("Buddy", petTypes[selected])
+	local ok, err = pcall(function()
+		pet = Pet.new("Buddy", petTypes[selected])
+	end)
+	if not ok then
+		print("Error creating pet: " .. err)
+		return
+	end
 	state = "playing"
 end
 
 function love.load()
+	if not love.window or not love.window.setTitle then
+		error("Love2D window module not available")
+	end
 	love.window.setTitle("BitBuddy")
+	if not love.graphics or not love.graphics.newFont then
+		error("Love2D graphics module not available")
+	end
 	font = love.graphics.newFont(14)
 	love.graphics.setFont(font)
 end
 
 function love.update(dt)
 	if state == "playing" and pet then
-		pet:update(dt)
+		local ok, err = pcall(function()
+			pet:update(dt)
+		end)
+		if not ok then
+			print("Error updating pet: " .. err)
+			state = "gameover"
+			return
+		end
 		if not pet.alive then
 			state = "gameover"
 		end
@@ -92,6 +114,10 @@ function love.draw()
 end
 
 function love.mousepressed(x,y,buttonid)
+	if not x or not y then
+		print("Warning: Invalid mouse coordinates")
+		return
+	end
 	if state == "menu" then
 		local sx = love.graphics.getWidth()/2 - 60
 		if x >= sx and x <= sx + 120 and y >= 240 and y <= 280 then
@@ -109,15 +135,18 @@ function love.mousepressed(x,y,buttonid)
 		local pad = 8
 		-- Feed
 		if x >= bx and x <= bx+button.w and y >= by and y <= by+button.h then
-			pet:feed()
+			local ok, err = pcall(function() pet:feed() end)
+			if not ok then print("Error feeding pet: " .. err) end
 		end
 		-- Play
 		if x >= bx + (button.w+pad) and x <= bx + (button.w+pad) + button.w and y >= by and y <= by+button.h then
-			pet:play()
+			local ok, err = pcall(function() pet:play() end)
+			if not ok then print("Error playing with pet: " .. err) end
 		end
 		-- Sleep
 		if x >= bx + 2*(button.w+pad) and x <= bx + 2*(button.w+pad) + button.w and y >= by and y <= by+button.h then
-			pet:sleep()
+			local ok, err = pcall(function() pet:sleep() end)
+			if not ok then print("Error putting pet to sleep: " .. err) end
 		end
 	elseif state == "gameover" then
 		-- ignore
@@ -125,6 +154,10 @@ function love.mousepressed(x,y,buttonid)
 end
 
 function love.keypressed(k)
+	if not k then
+		print("Warning: Invalid key pressed")
+		return
+	end
 	if state == "menu" then
 		if k == "1" then selected = 1 end
 		if k == "2" then selected = 2 end
