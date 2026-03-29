@@ -1,6 +1,4 @@
-package.path = package.path .. ';./src/?.lua'
-
-local Pet = require("pet")
+local Pet = require("src.pet")
 
 local state = "menu" -- menu, playing, gameover
 local petTypes = {"Cat","Dog"}
