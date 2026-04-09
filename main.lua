@@ -1,9 +1,4 @@
-package.path = package.path .. ';./src/?.lua'
-
-local ok, Pet = pcall(require, "pet")
-if not ok then
-	error("Failed to load pet module: " .. Pet)
-end
+local Pet = require("src.pet")
 
 local state = "menu" -- menu, playing, gameover
 local petTypes = {"Cat","Dog"}
