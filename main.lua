@@ -13,13 +13,12 @@ button.h = 36
 local function startGame()
 	pet = Pet.new("Buddy", petTypes[selected])
 	pet.sprite = sprites[pet.type]
-	pet.scale=sprites[pet.type].scale
 
 	pet.x = love.graphics.getWidth()/2 - 150
 	pet.y = 40
 
 	local ok, err = pcall(function()
-		pet = Pet.new("Buddy", petTypes[selected])
+		return Pet.new("Buddy", petTypes[selected])
 	end)
 	if not ok then
 		print("Error creating pet: " .. err)
