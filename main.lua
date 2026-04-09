@@ -28,15 +28,15 @@ function love.load()
 
 	sprites = {
 		Dog = {
-			img= love.graphics.newImage("images/dog.png"),
+			img= love.graphics.newImage("assets/images/dog.png"),
 			scale = 0.25
 		},
 		Cat = {
-			img = love.graphics.newImage("images/cat.png"),
+			img = love.graphics.newImage("assets/images/cat.png"),
 			scale = 2.5
 		}
 	}
-	ripImg = love.graphics.newImage("images/rip.png")
+	ripImg = love.graphics.newImage("assets/images/rip.png")
 end
 
 function love.update(dt)
