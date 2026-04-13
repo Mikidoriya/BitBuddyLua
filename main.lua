@@ -4,6 +4,7 @@ local state = "menu" -- menu, playing, gameover
 local petTypes = {"Cat","Dog"}
 local selected = 1
 local pet
+local sprites = {}
 
 local button = {}
 button.w = 120
@@ -11,18 +12,57 @@ button.h = 36
 
 local function startGame()
 	pet = Pet.new("Buddy", petTypes[selected])
+	pet.sprite = sprites[pet.type]
+	pet.scale = sprites[pet.type].scale
+
+	pet.x = love.graphics.getWidth()/2-150
+	pet.y = 40
+
+	local ok, err = pcall(function()
+		return Pet.new("Buddy", petTypes[selected])
+	end)
+	if not ok then
+		print("Error creating pet: " .. err)
+		return
+	end
 	state = "playing"
+
 end
 
 function love.load()
+	if not love.window or not love.window.setTitle then
+		error("Love2D window module not available")
+	end
 	love.window.setTitle("BitBuddy")
+	if not love.graphics or not love.graphics.newFont then
+		error("Love2D graphics module not available")
+	end
 	font = love.graphics.newFont(14)
 	love.graphics.setFont(font)
+
+	sprites = {
+		Dog = {
+			img= love.graphics.newImage("assets/images/dog.png"),
+			scale = 0.25
+		},
+		Cat = {
+			img = love.graphics.newImage("assets/images/cat.png"),
+			scale = 2.5
+		}
+	}
+	ripImg = love.graphics.newImage("assets/images/rip.png")
 end
 
 function love.update(dt)
 	if state == "playing" and pet then
-		pet:update(dt)
+		local ok, err = pcall(function()
+			pet:update(dt)
+		end)
+		if not ok then
+			print("Error updating pet: " .. err)
+			state = "gameover"
+			return
+		end
 		if not pet.alive then
 			state = "gameover"
 		end
@@ -70,22 +110,70 @@ function love.draw()
 
 	if state == "menu" then
 		love.graphics.printf("Choose a pet (press 1 or 2) and click Start", 0, 40, love.graphics.getWidth(), "center")
-		for i,t in ipairs(petTypes) do
-			local x = 80 + (i-1)*220
-			love.graphics.rectangle("line", x, 100, 180, 120)
-			love.graphics.printf(t, x, 140, 180, "center")
+		
+		local screenW = love.graphics.getWidth()
+
+		local boxW = 180
+		local boxH = 120
+		local spacing = 40
+		local totalW = boxW * 2 + spacing
+
+		local startX = (screenW - totalW) / 2
+		local y = 100
+
+		for i, t in ipairs(petTypes) do
+    	local x = startX + (i-1)*(boxW + spacing)
+		
+		-- box
+    	love.graphics.rectangle("line", x, y, boxW, boxH)
+		
+		--for i,t in ipairs(petTypes) do
+			--local x = 80 + (i-1)*220
+			--love.graphics.rectangle("line", x, 100, 180, 120)
+			love.graphics.printf(t, x, y +95, boxW, "center")
+			
+			if sprites[t] then
+        	local sprite = sprites[t]
+        	love.graphics.draw(
+            sprite.img,
+            x + boxW/2,
+            y + boxH/2 - 10,
+            0,
+            sprite.scale,
+            sprite.scale,
+            sprite.img:getWidth()/2,
+            sprite.img:getHeight()/2
+        )
+    	end
+			
 			if i == selected then
 				love.graphics.setColor(0,1,0)
-				love.graphics.rectangle("line", x-2,98,184,124)
-				love.graphics.setColor(1,1,1)
-			end
+				--love.graphics.rectangle("line", x-2,98,184,124)
+				love.graphics.rectangle("line", x-2, y-2, boxW+4, boxH+4)
+				love.graphics.setColor(1,1,1)			end
 		end
+
 		love.graphics.rectangle("line", love.graphics.getWidth()/2 - 60, 240, 120, 40)
 		love.graphics.printf("Start", love.graphics.getWidth()/2 - 60, 248, 120, "center")
 
 	elseif state == "playing" then
 		love.graphics.printf("Pet: " .. pet.name .. " ("..pet.type..")", 8, 40, 300)
 		love.graphics.printf("Mood: " .. getMood(pet), 8, 60, 300)
+
+		if pet.sprite then
+			local img = pet.sprite.img
+			local scale = pet.sprite.scale
+			love.graphics.draw(
+				img,
+				pet.x,
+				pet.y,
+				0,
+				scale,
+				scale,
+				img:getWidth()/2 ,
+				img:getHeight()/2
+			)
+		end
 
 		drawBar(8,80,300,28, pet.hunger, pet.max, {1,0.4,0.4})
 		love.graphics.print("Hunger", 320, 84)
@@ -107,6 +195,19 @@ function love.draw()
 	elseif state == "gameover" then
 		love.graphics.printf("Your pet became Sad. Game Over.", 0, 120, love.graphics.getWidth(), "center")
 		love.graphics.printf("Press R to restart", 0, 160, love.graphics.getWidth(), "center")
+
+		if ripImg then
+			love.graphics.draw(
+				ripImg,
+				love.graphics.getWidth()/2,
+				200,
+				0,
+				0.4,
+				0.4,
+				ripImg:getWidth()/2 ,
+				0
+			)
+		end
 	end
 end
 
