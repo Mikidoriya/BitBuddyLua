@@ -1,6 +1,7 @@
 local Pet = require("src.pet")
 
-local state = "menu" -- menu, playing, gameover
+local state = "title"
+--local state = "menu" -- menu, playing, gameover
 local petTypes = {"Cat","Dog"}
 local selected = 1
 local pet
@@ -50,6 +51,7 @@ function love.load()
 			scale = 2.5
 		}
 	}
+	titleImg = love.graphics.newImage("assets/images/title.png")
 	ripImg = love.graphics.newImage("assets/images/rip.png")
 end
 
@@ -108,8 +110,38 @@ function love.draw()
 	love.graphics.setColor(1,1,1)
 	love.graphics.printf("BitBuddy - Digital Pet", 0, 8, love.graphics.getWidth(), "center")
 
-	if state == "menu" then
-		love.graphics.printf("Choose a pet (press 1 or 2) and click Start", 0, 40, love.graphics.getWidth(), "center")
+	-- bitbuddy titile screen
+	if state == "title" then
+    love.graphics.setColor(1,1,1)
+
+    -- Game title
+	if titleImg then
+        local screenW = love.graphics.getWidth()
+        local screenH = love.graphics.getHeight()
+
+        local imgW = titleImg:getWidth()
+        local imgH = titleImg:getHeight()
+
+        local scaleX = screenW / imgW
+        local scaleY = screenH / imgH
+
+        love.graphics.draw(titleImg, 0, 0, 0, scaleX, scaleY)
+    end
+    --love.graphics.printf("BitBuddy", 0, 120, love.graphics.getWidth(), "center")
+    --love.graphics.printf("A Digital Pet Adventure", 0, 170, love.graphics.getWidth(), "center")
+
+    -- Start button
+    local bx = love.graphics.getWidth()/2 - 80
+    local by = 130
+    local bw = 160
+    local bh = 50
+
+	love.graphics.setColor(1,1,1)
+    love.graphics.rectangle("line", bx, by, bw, bh)
+    love.graphics.printf("Start", bx, by + 15, bw, "center")
+
+	elseif state == "menu" then
+		love.graphics.printf("Choose a pet (press 1 or 2) and click Play", 0, 40, love.graphics.getWidth(), "center")
 		
 		local screenW = love.graphics.getWidth()
 
@@ -154,7 +186,7 @@ function love.draw()
 		end
 
 		love.graphics.rectangle("line", love.graphics.getWidth()/2 - 60, 240, 120, 40)
-		love.graphics.printf("Start", love.graphics.getWidth()/2 - 60, 248, 120, "center")
+		love.graphics.printf("Play", love.graphics.getWidth()/2 - 60, 248, 120, "center")
 
 	elseif state == "playing" then
 		love.graphics.printf("Pet: " .. pet.name .. " ("..pet.type..")", 8, 40, 300)
@@ -212,7 +244,18 @@ function love.draw()
 end
 
 function love.mousepressed(x,y,buttonid)
-	if state == "menu" then
+	--title click to start
+	if state == "title" then
+    local bx = love.graphics.getWidth()/2 - 80
+    local by = 130
+    local bw = 160
+    local bh = 50
+
+    if x >= bx and x <= bx + bw and y >= by and y <= by + bh then
+        state = "menu"
+    end
+
+	elseif state == "menu" then
 		local sx = love.graphics.getWidth()/2 - 60
 		if x >= sx and x <= sx + 120 and y >= 240 and y <= 280 then
 			startGame()
